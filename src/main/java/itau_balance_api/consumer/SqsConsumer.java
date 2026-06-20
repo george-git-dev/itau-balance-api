@@ -62,6 +62,10 @@ public class SqsConsumer {
 
                 System.out.println("Processed account: " + account.getId());
 
+                sqsClient.deleteMessage(builder -> builder
+                        .queueUrl(queueUrl)
+                        .receiptHandle(message.receiptHandle()));
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
