@@ -1,5 +1,6 @@
-package itau_balance_api.entity;
+package itau_balance_api.service;
 
+import itau_balance_api.entity.Account;
 import itau_balance_api.repository.AccountRepository;
 import org.springframework.stereotype.Service;
 
@@ -13,8 +14,12 @@ public class AccountService {
         this.accountRepository = accountRepository;
     }
 
-    public Account save(Account account) {
-        return accountRepository.save(account);
+    public void upsert(Account incomingAccount) {
+        accountRepository.findById(incomingAccount.getId()).ifPresentOrElse(existingAccount -> {
+            if (incomingAccount.getUpdatedAt().isAfter(existingAccount.getUpdatedAt())) {
+                accountRepository.save(incomingAccount);
+            }
+        }, () -> accountRepository.save(incomingAccount));
     }
 
     public Optional<Account> findById(String id) {
