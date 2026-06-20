@@ -1,5 +1,7 @@
 package itau_balance_api.controller;
 
+import itau_balance_api.dto.BalanceDTO;
+import itau_balance_api.dto.BalanceResponse;
 import itau_balance_api.entity.Account;
 import itau_balance_api.service.AccountService;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,7 +20,21 @@ public class AccountController {
     }
 
     @GetMapping("/{accountId}")
-    public Account getBalance(@PathVariable String accountId) {
-        return service.findById(accountId).orElseThrow(() -> new RuntimeException("Account not found"));
+    public BalanceResponse getBalance(@PathVariable String accountId) {
+
+        Account account = service.findById(accountId).orElseThrow(() -> new RuntimeException("Account not found"));
+
+        BalanceDTO balanceDTO = new BalanceDTO();
+        balanceDTO.setAmount(account.getBalance());
+        balanceDTO.setCurrency(account.getCurrency());
+
+        BalanceResponse response = new BalanceResponse();
+        response.setId(account.getId());
+        response.setOwner(account.getOwner());
+        response.setBalance(balanceDTO);
+        response.setUpdatedAt(account.getUpdatedAt());
+
+
+        return response;
     }
 }
