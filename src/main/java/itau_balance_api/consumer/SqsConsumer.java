@@ -1,75 +1,49 @@
 package itau_balance_api.consumer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.awspring.cloud.sqs.annotation.SqsListener;
 import itau_balance_api.dto.TransactionMessage;
 import itau_balance_api.entity.Account;
 import itau_balance_api.service.AccountService;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import software.amazon.awssdk.services.sqs.SqsClient;
-import software.amazon.awssdk.services.sqs.model.Message;
-import software.amazon.awssdk.services.sqs.model.ReceiveMessageRequest;
 
 import java.time.Instant;
-import java.util.List;
 
 @Component
 public class SqsConsumer {
 
     private final AccountService service;
     private final ObjectMapper mapper;
-    private final SqsClient sqsClient;
-    private final String queueUrl = "http://localhost:4566/000000000000/transacoes-financeiras-processadas";
 
-    public SqsConsumer(SqsClient sqsClient, AccountService service, ObjectMapper mapper) {
-        this.sqsClient = sqsClient;
+    public SqsConsumer(AccountService service, ObjectMapper mapper) {
         this.service = service;
         this.mapper = mapper;
     }
 
-    @Scheduled(fixedDelay = 3000)
-    public void consume() {
+    @SqsListener(value = "${aws.sqs.queue-name}")
+    public void consume(String message) {
+        try {
 
-        ReceiveMessageRequest request = ReceiveMessageRequest.builder()
-                .queueUrl(queueUrl)
-                .maxNumberOfMessages(10)
-                .build();
+            TransactionMessage payload = mapper.readValue(message, TransactionMessage.class);
 
-        List<Message> messages = sqsClient.receiveMessage(request).messages();
+            var accountData = payload.getAccount();
+            var transaction = payload.getTransaction();
 
-        if (!messages.isEmpty()) {
-            System.out.println("Received messages: " + messages.size());
-        }
+            Account account = new Account();
+            account.setId(accountData.getId());
+            account.setOwner(accountData.getOwner());
+            account.setBalance(accountData.getBalance().getAmount());
+            account.setCurrency(accountData.getBalance().getCurrency());
 
-        for (Message message : messages) {
+            account.setUpdatedAt(Instant.ofEpochMilli(transaction.getTimestamp() / 1000));
 
-            TransactionMessage payload;
-            try {
-                payload = mapper.readValue(message.body(), TransactionMessage.class);
+            service.upsert(account);
 
-                var accountData = payload.getAccount();
-                var transaction = payload.getTransaction();
+            System.out.println("Processed via listener: " + account.getId());
 
-                Account account = new Account();
-                account.setId(accountData.getId());
-                account.setOwner(accountData.getOwner());
-                account.setBalance(accountData.getBalance().getAmount());
-                account.setCurrency(accountData.getBalance().getCurrency());
-
-                account.setUpdatedAt(Instant.ofEpochMilli(transaction.getTimestamp() / 1000));
-
-                service.upsert(account);
-
-                System.out.println("Processed account: " + account.getId());
-
-                sqsClient.deleteMessage(builder -> builder
-                        .queueUrl(queueUrl)
-                        .receiptHandle(message.receiptHandle()));
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        } catch (Exception e) {
+            System.err.println("Error processing message: " + message);
+            e.printStackTrace();
         }
     }
-
 }
