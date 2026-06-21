@@ -5,17 +5,19 @@ import io.awspring.cloud.sqs.annotation.SqsListener;
 import itau_balance_api.dto.TransactionMessage;
 import itau_balance_api.entity.Account;
 import itau_balance_api.mapper.AccountMapper;
-import itau_balance_api.service.impl.AccountServiceImpl;
+import itau_balance_api.service.AccountService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 public class SqsConsumer {
 
-    private final AccountServiceImpl service;
+    private final AccountService service;
     private final AccountMapper accountMapper;
     private final ObjectMapper objectMapper;
 
-    public SqsConsumer(AccountServiceImpl service, ObjectMapper objectMapper, AccountMapper accountMapper) {
+    public SqsConsumer(AccountService service, ObjectMapper objectMapper, AccountMapper accountMapper) {
         this.service = service;
         this.objectMapper = objectMapper;
         this.accountMapper = accountMapper;
@@ -23,6 +25,7 @@ public class SqsConsumer {
 
     @SqsListener(value = "${aws.sqs.queue-name}")
     public void consume(String message) {
+        log.debug("Received message from SQS: {}", message);
         try {
 
             TransactionMessage payload = objectMapper.readValue(message, TransactionMessage.class);
@@ -31,10 +34,10 @@ public class SqsConsumer {
 
             service.upsert(account);
 
-            System.out.println("Processed via listener: " + account.getId());
+            log.debug("Processed via listener: {}", account.getId());
 
         } catch (Exception e) {
-            System.err.println("Error processing message: " + message);
+            log.error("Error processing message: {}", message, e);
             e.printStackTrace();
         }
     }
