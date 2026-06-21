@@ -9,6 +9,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+
 @RestController
 @RequestMapping("/balances")
 public class AccountController {
@@ -32,7 +35,7 @@ public class AccountController {
         response.setId(account.getId());
         response.setOwner(account.getOwner());
         response.setBalance(balanceDTO);
-        response.setUpdatedAt(account.getUpdatedAt());
+        response.setUpdated_at(OffsetDateTime.ofInstant(account.getUpdatedAt(), ZoneId.of("America/Sao_Paulo")));
 
 
         return response;

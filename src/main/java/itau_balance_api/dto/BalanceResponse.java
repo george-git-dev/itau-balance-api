@@ -2,7 +2,7 @@ package itau_balance_api.dto;
 
 import lombok.Data;
 
-import java.time.Instant;
+import java.time.OffsetDateTime;
 
 @Data
 public class BalanceResponse {
@@ -10,5 +10,5 @@ public class BalanceResponse {
     private String id;
     private String owner;
     private BalanceDTO balance;
-    private Instant updatedAt;
+    private OffsetDateTime updated_at;
 }
