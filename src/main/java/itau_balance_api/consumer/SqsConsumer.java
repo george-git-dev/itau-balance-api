@@ -4,38 +4,30 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.awspring.cloud.sqs.annotation.SqsListener;
 import itau_balance_api.dto.TransactionMessage;
 import itau_balance_api.entity.Account;
+import itau_balance_api.mapper.AccountMapper;
 import itau_balance_api.service.impl.AccountServiceImpl;
 import org.springframework.stereotype.Component;
-
-import java.time.Instant;
 
 @Component
 public class SqsConsumer {
 
     private final AccountServiceImpl service;
-    private final ObjectMapper mapper;
+    private final AccountMapper accountMapper;
+    private final ObjectMapper objectMapper;
 
-    public SqsConsumer(AccountServiceImpl service, ObjectMapper mapper) {
+    public SqsConsumer(AccountServiceImpl service, ObjectMapper objectMapper, AccountMapper accountMapper) {
         this.service = service;
-        this.mapper = mapper;
+        this.objectMapper = objectMapper;
+        this.accountMapper = accountMapper;
     }
 
     @SqsListener(value = "${aws.sqs.queue-name}")
     public void consume(String message) {
         try {
 
-            TransactionMessage payload = mapper.readValue(message, TransactionMessage.class);
+            TransactionMessage payload = objectMapper.readValue(message, TransactionMessage.class);
 
-            var accountData = payload.getAccount();
-            var transaction = payload.getTransaction();
-
-            Account account = new Account();
-            account.setId(accountData.getId());
-            account.setOwner(accountData.getOwner());
-            account.setBalance(accountData.getBalance().getAmount());
-            account.setCurrency(accountData.getBalance().getCurrency());
-
-            account.setUpdatedAt(Instant.ofEpochMilli(transaction.getTimestamp() / 1000));
+            Account account = accountMapper.fromMessage(payload);
 
             service.upsert(account);
 
