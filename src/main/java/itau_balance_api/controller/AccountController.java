@@ -37,7 +37,7 @@ public class AccountController {
                 .id(account.getId())
                 .owner(account.getOwner())
                 .balance(balanceDTO)
-                .updated_at(OffsetDateTime.ofInstant(account.getUpdatedAt(), ZoneId.of("America/Sao_Paulo")))
+                .updatedAt(OffsetDateTime.ofInstant(account.getUpdatedAt(), ZoneId.of("America/Sao_Paulo")))
                 .build();
     }
 }

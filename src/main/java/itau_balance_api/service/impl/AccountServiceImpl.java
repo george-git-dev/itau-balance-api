@@ -20,21 +20,12 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public void upsert(Account incomingAccount) {
-        Optional<Account> existingAccount = accountRepository.findById(incomingAccount.getId());
-
-        if (existingAccount.isEmpty()) {
-            log.debug("Creating new account: {}", incomingAccount.getId());
-            accountRepository.save(incomingAccount);
-
-        } else if (incomingAccount.getUpdatedAt().isAfter(existingAccount.get().getUpdatedAt())) {
-            log.debug("Updating account: {}", incomingAccount.getId());
-            accountRepository.save(incomingAccount);
-        }
+        accountRepository.upsert(incomingAccount);
     }
 
     @Override
     public Optional<Account> findById(String id) {
-        log.info("Finding accountById: {}", id);
+        log.info("Finding account by id: {}", id);
         return accountRepository.findById(id);
     }
 }
