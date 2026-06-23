@@ -38,7 +38,7 @@ public class SqsConsumer {
 
         } catch (Exception e) {
             log.error("Error processing message: {}", message, e);
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 }
