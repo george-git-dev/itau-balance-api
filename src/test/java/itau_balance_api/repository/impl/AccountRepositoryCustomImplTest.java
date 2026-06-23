@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -72,5 +73,57 @@ class AccountRepositoryCustomImplTest {
     void upsert_ShouldNotThrowException_WhenMongoOperationsSucceed() {
         // Act & Assert
         assertDoesNotThrow(() -> accountRepositoryCustom.upsert(testAccount));
+    }
+
+    @Test
+    void upsert_ShouldIncludeUpdatedAtInUpdateQuery_ToPreventOldDataOverwrite() {
+        // Act
+        accountRepositoryCustom.upsert(testAccount);
+
+        // Assert - verifica que a query do updateFirst contém o updatedAt (proteção contra dados antigos)
+        ArgumentCaptor<Query> queryCaptor = ArgumentCaptor.forClass(Query.class);
+        verify(mongoTemplate).updateFirst(queryCaptor.capture(), any(Update.class), eq(Account.class));
+
+        String queryString = queryCaptor.getValue().toString();
+        assertTrue(queryString.contains("updatedAt"),
+                "updateFirst query deve filtrar por updatedAt para evitar sobrescrever dados mais recentes");
+    }
+
+    @Test
+    void upsert_ShouldIncludeBalanceInUpdate_WhenAccountProvided() {
+        // Act
+        accountRepositoryCustom.upsert(testAccount);
+
+        // Assert
+        ArgumentCaptor<Update> updateCaptor = ArgumentCaptor.forClass(Update.class);
+        verify(mongoTemplate).updateFirst(any(Query.class), updateCaptor.capture(), eq(Account.class));
+
+        String updateString = updateCaptor.getValue().toString();
+        assertTrue(updateString.contains("balance"), "Update deve conter o campo balance");
+        assertTrue(updateString.contains("updatedAt"), "Update deve conter o campo updatedAt");
+    }
+
+    @Test
+    void upsert_ShouldUseSetOnInsert_ForInsertQuery() {
+        // Act
+        accountRepositoryCustom.upsert(testAccount);
+
+        // Assert
+        ArgumentCaptor<Update> updateCaptor = ArgumentCaptor.forClass(Update.class);
+        verify(mongoTemplate).upsert(any(Query.class), updateCaptor.capture(), eq(Account.class));
+
+        String updateString = updateCaptor.getValue().toString();
+        assertTrue(updateString.contains("$setOnInsert"), "Insert update deve usar setOnInsert para não sobrescrever documento existente");
+    }
+
+    @Test
+    void upsert_ShouldCallUpdateFirstBeforeUpsert_ToEnsureCorrectOrder() {
+        // Act
+        accountRepositoryCustom.upsert(testAccount);
+
+        // Assert
+        InOrder inOrder = inOrder(mongoTemplate);
+        inOrder.verify(mongoTemplate).updateFirst(any(Query.class), any(Update.class), eq(Account.class));
+        inOrder.verify(mongoTemplate).upsert(any(Query.class), any(Update.class), eq(Account.class));
     }
 }
