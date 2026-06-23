@@ -1,6 +1,5 @@
 package itau_balance_api.controller;
 
-import itau_balance_api.dto.BalanceDTO;
 import itau_balance_api.dto.BalanceResponse;
 import itau_balance_api.entity.Account;
 import itau_balance_api.exception.AccountNotFoundException;
@@ -19,7 +18,6 @@ import java.time.ZoneId;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)

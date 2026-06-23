@@ -2,7 +2,6 @@ package itau_balance_api.handler;
 
 import itau_balance_api.dto.ErrorResponse;
 import itau_balance_api.exception.AccountNotFoundException;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
