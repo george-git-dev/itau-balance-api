@@ -16,7 +16,10 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public  ErrorResponse handleGenericException(Exception ex) {
         log.error("Generic exception: {}", ex.getMessage());
-        return new ErrorResponse(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
+        return ErrorResponse.builder()
+                .message(ex.getMessage())
+                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .build();
     }
 
 
@@ -24,6 +27,9 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleAccountNotFound(AccountNotFoundException ex) {
         log.error("Account not found: {}", ex.getMessage());
-        return new ErrorResponse(ex.getMessage(), HttpStatus.NOT_FOUND.value());
+        return ErrorResponse.builder()
+                .message(ex.getMessage())
+                .status(HttpStatus.NOT_FOUND.value())
+                .build();
     }
 }
