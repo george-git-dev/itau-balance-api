@@ -28,17 +28,16 @@ public class AccountController {
 
         Account account = service.findById(accountId).orElseThrow(() -> new AccountNotFoundException(accountId));
 
-        BalanceDTO balanceDTO = new BalanceDTO();
-        balanceDTO.setAmount(account.getBalance());
-        balanceDTO.setCurrency(account.getCurrency());
+        BalanceDTO balanceDTO = BalanceDTO.builder()
+                .amount(account.getBalance())
+                .currency(account.getCurrency())
+                .build();
 
-        BalanceResponse response = new BalanceResponse();
-        response.setId(account.getId());
-        response.setOwner(account.getOwner());
-        response.setBalance(balanceDTO);
-        response.setUpdated_at(OffsetDateTime.ofInstant(account.getUpdatedAt(), ZoneId.of("America/Sao_Paulo")));
-
-
-        return response;
+        return BalanceResponse.builder()
+                .id(account.getId())
+                .owner(account.getOwner())
+                .balance(balanceDTO)
+                .updated_at(OffsetDateTime.ofInstant(account.getUpdatedAt(), ZoneId.of("America/Sao_Paulo")))
+                .build();
     }
 }
