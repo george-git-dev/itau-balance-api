@@ -14,7 +14,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public  ErrorResponse handleGenericException(Exception ex) {
+    public ErrorResponse handleGenericException(Exception ex) {
         log.error("Generic exception: {}", ex.getMessage());
         return ErrorResponse.builder()
                 .message(ex.getMessage())

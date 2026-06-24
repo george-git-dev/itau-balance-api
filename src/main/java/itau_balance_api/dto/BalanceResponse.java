@@ -18,5 +18,5 @@ public class BalanceResponse {
     private String owner;
     private BalanceDTO balance;
     @JsonProperty("updated_at")
-    private OffsetDateTime updatedAt;  // camelCase no Java
+    private OffsetDateTime updatedAt;
 }
