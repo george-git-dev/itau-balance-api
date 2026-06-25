@@ -58,6 +58,7 @@ src/
 - Docker Desktop running
 - Java 21+
 - Maven
+- **Windows only:** WSL (Windows Subsystem for Linux) — required to run `setup.sh`
 
 ### 1. Place the provided `docker-compose.yml` in a folder
 
@@ -145,14 +146,6 @@ curl --location 'http://localhost:8080/balances/5b19c8b6-0cc4-4c72-a989-0c2ee15f
 ---
 
 ## 🧪 Testing with Postman / cURL
-
-### Get account balance
-
-```bash
-curl --location 'http://localhost:8080/balances/5b19c8b6-0cc4-4c72-a989-0c2ee15fa975'
-```
-
----
 
 ### Send a valid message to the main queue
 
